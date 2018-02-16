@@ -33,7 +33,27 @@ struct gpio_s
 }
 *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 
+static const int gpio_led[2] = {4, 17};
+static const int gpio_btn[1] = {18};
 
+#define GPIO_INPUT	0
+#define GPIO_OUTPUT	1
+
+/* ----------------------------------------------------------------------------
+ * Defining function prototypes 
+ * --------------------------------------------------------------------------*/
+static int 
+open_ledbp(struct inode *inode, struct file *file);
+static ssize_t 
+read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos);
+static ssize_t 
+write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos);
+static int 
+release_ledbp(struct inode *inode, struct file *file);
+
+static void gpio_fsel(int pin, int fun);
+static void gpio_write(int pin, bool val);
+static int gpio_read(int pin);
 
 /* ----------------------------------------------------------------------------
  * Defining module parameters
@@ -51,16 +71,6 @@ static int major;
 /* ----------------------------------------------------------------------------
  * Init structure for saving driver in module
  * --------------------------------------------------------------------------*/
-static int 
-open_ledbp(struct inode *inode, struct file *file);
-static ssize_t 
-read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos);
-static ssize_t 
-write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos);
-static int 
-release_ledbp(struct inode *inode, struct file *file);
-
-
 struct file_operations fops_ledbp =
 {
 	.open       = open_ledbp,
@@ -93,6 +103,8 @@ __exit mon_module_cleanup(void)
  * --------------------------------------------------------------------------*/
 static int 
 open_ledbp(struct inode *inode, struct file *file) {
+	gpio_fsel(gpio_led[0], GPIO_OUTPUT);	/* LED0 AS OUTPUT */
+	gpio_fsel(gpio_btn[0], GPIO_INPUT);	/* BTN0 AS INPUT */
 	printk(KERN_DEBUG "open()\n");
 	return 0;
 }
@@ -106,6 +118,13 @@ read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
 static ssize_t 
 write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
 	printk(KERN_DEBUG "write()\n");
+	if (count > 0) {
+		printk(KERN_DEBUG "char : %c\n", buf[0]);
+		if (buf[0] == '0')
+			gpio_write(gpio_led[0], 0);
+		else
+			gpio_write(gpio_led[0], 1);
+	}
 	return count;
 }
 
