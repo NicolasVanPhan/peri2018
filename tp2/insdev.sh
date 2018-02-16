@@ -1,4 +1,4 @@
-!#/bin/sh
+#!/bin/sh
 module=$1
 shift
 /sbin/insmod ./$module.ko $* || exit 1
