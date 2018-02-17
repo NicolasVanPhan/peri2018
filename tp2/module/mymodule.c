@@ -5,16 +5,15 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Charlie, 2015");
 MODULE_DESCRIPTION("Module, aussitot insere, aussitot efface");
 
-/* Adding a parameter in the module
- * so that the user can specify which port to blink */
-static int LED;
-module_param(LED, int, 0);
-MODULE_PARM_DESC(LED, "Number of leds");
+/* Adding some parameter */
+static int nb_leds;
+module_param(nb_leds, int, 0);
+MODULE_PARM_DESC(nb_leds, "The number of leds used");
 
 static int __init mon_module_init(void)
 {
-	printk(KERN_DEBUG "Hello World <votre nom> !\n");
-	printk(KERN_DEBUG "LED=%d !!\n", LED);
+	printk(KERN_DEBUG "Hello World!\n");
+	printk(KERN_DEBUG "nb_leds=%d\n", nb_leds);
 	return 0;
 }
 
