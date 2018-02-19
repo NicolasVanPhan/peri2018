@@ -4,16 +4,43 @@
 #include <asm/io.h>
 #include <mach/platform.h>
 
+#define GPIO_INPUT	0
+#define GPIO_OUTPUT	1
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Bryan and Nicolas, 2018");
 MODULE_DESCRIPTION("A little driver that blinks LEDS till a button is pressed");
 
+/* --------- Defining module parameters  ----------------------------------- */
+static int nb_leds;
+module_param(nb_leds, int, 0);
+MODULE_PARM_DESC(nb_leds, "Number of leds");
+
+static int btn_port;
+module_param(btn_port, int, 0);
+MODULE_PARM_DESC(led1_port, "Number of leds");
+
+static int major;
+
+/* --------- Defining function prototypes ---------------------------------- */
+
+static int	open_ledbp(struct inode *inode, struct file *file);
+static ssize_t 	read_ledbp(struct file *file, char *buf, size_t count,
+			   loff_t *ppos);
+static ssize_t 	write_ledbp(struct file *file, const char *buf, size_t count,
+			    loff_t *ppos);
+static int 	release_ledbp(struct inode *inode, struct file *file);
+
+static void	gpio_fsel(int pin, int fun);
+static void	gpio_write(int pin, bool val);
+static int	gpio_read(int pin);
+
 
 /* ----------------------------------------------------------------------------
- * Defining structure for easily accessing GPIO ports
- * --------------------------------------------------------------------------*/
-static const int LED0 = 4;
+ * -------- Hardware interface configuration  ---------------------------------
+ * ------------------------------------------------------------------------- */
 
+/* Defining a structure for easily accessing GPIO ports */
 struct gpio_s
 {
 	uint32_t gpfsel[7];
@@ -33,44 +60,15 @@ struct gpio_s
 }
 *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 
+/* Defining ports associated to the LEDs and switch */
 static const int gpio_led[2] = {4, 17};
 static const int gpio_btn[1] = {18};
 
-#define GPIO_INPUT	0
-#define GPIO_OUTPUT	1
-
 /* ----------------------------------------------------------------------------
- * Defining function prototypes 
- * --------------------------------------------------------------------------*/
-static int 
-open_ledbp(struct inode *inode, struct file *file);
-static ssize_t 
-read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos);
-static ssize_t 
-write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos);
-static int 
-release_ledbp(struct inode *inode, struct file *file);
+ * -------- User interface configuration  -------------------------------------
+ * ------------------------------------------------------------------------- */
 
-static void gpio_fsel(int pin, int fun);
-static void gpio_write(int pin, bool val);
-static int gpio_read(int pin);
-
-/* ----------------------------------------------------------------------------
- * Defining module parameters
- * --------------------------------------------------------------------------*/
-static int nb_leds;
-module_param(nb_leds, int, 0);
-MODULE_PARM_DESC(nb_leds, "Number of leds");
-
-static int btn_port;
-module_param(btn_port, int, 0);
-MODULE_PARM_DESC(led1_port, "Number of leds");
-
-static int major;
-
-/* ----------------------------------------------------------------------------
- * Init structure for saving driver in module
- * --------------------------------------------------------------------------*/
+/* Init structure for saving driver in module */
 struct file_operations fops_ledbp =
 {
 	.open       = open_ledbp,
@@ -80,13 +78,15 @@ struct file_operations fops_ledbp =
 };
 
 /* ----------------------------------------------------------------------------
- * Defining module necessary functions
- * --------------------------------------------------------------------------*/
+ * -------- Functions  --------------------------------------------------------
+ * ------------------------------------------------------------------------- */
+
+/* ---- Defining module necessary functions -------------------------------- */
 static int
 __init mon_module_init(void)
 {
 	major = register_chrdev(0, "ledbp", &fops_ledbp);
-	printk(KERN_DEBUG "Hello World <votre nom> !\n");
+	printk(KERN_DEBUG "Hello World <Phan Aggoun> !\n");
 	printk(KERN_DEBUG "nb leds=%d !!\n", nb_leds);
 	return 0;
 }
@@ -98,31 +98,46 @@ __exit mon_module_cleanup(void)
 	printk(KERN_DEBUG "Goodbye World!\n");
 }
 
-/* ----------------------------------------------------------------------------
- * Defining driver functions
- * --------------------------------------------------------------------------*/
+/* ---- Defining driver functions ------------------------------------------ */
 static int 
 open_ledbp(struct inode *inode, struct file *file) {
-	gpio_fsel(gpio_led[0], GPIO_OUTPUT);	/* LED0 AS OUTPUT */
-	gpio_fsel(gpio_btn[0], GPIO_INPUT);	/* BTN0 AS INPUT */
 	printk(KERN_DEBUG "open()\n");
+
+	gpio_fsel(gpio_led[0], GPIO_OUTPUT);
+	gpio_fsel(gpio_btn[0], GPIO_INPUT);
 	return 0;
 }
 
 static ssize_t 
 read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
+	int read_value;
 	printk(KERN_DEBUG "read()\n");
+
+	if (count > 0) {
+		read_value = gpio_read(gpio_btn[0]);
+		if (read_value == 1) {
+			buf[0] = '1';
+		}
+		else if (read_value == 0) {
+			buf[0] = '0';
+		}
+		else {
+			buf[0] = '2';
+			printk(KERN_DEBUG "GPIO read %d\n", read_value);
+		}
+	}
 	return count;
 }
 
 static ssize_t 
 write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
 	printk(KERN_DEBUG "write()\n");
-	if (count > 0) {
+
+	if (count > 0) {  		/* If user wrote something */
 		printk(KERN_DEBUG "char : %c\n", buf[0]);
-		if (buf[0] == '0')
+		if (buf[0] == '0')	/* if first char is 0, turn off LED0*/
 			gpio_write(gpio_led[0], 0);
-		else
+		else		  	/* Otherwise turn on LED0 */
 			gpio_write(gpio_led[0], 1);
 	}
 	return count;
@@ -135,9 +150,7 @@ release_ledbp(struct inode *inode, struct file *file) {
 }
 
 
-/* ----------------------------------------------------------------------------
- * Defining internal functions
- * --------------------------------------------------------------------------*/
+/* ---- Defining internal functions  --------------------------------------- */
 
 static void gpio_fsel(int pin, int fun)
 {
@@ -158,7 +171,7 @@ static void gpio_write(int pin, bool val)
 
 static int gpio_read(int pin)
 {
-	return gpio_regs->gplev[pin / 32] >> ((pin % 32) & 0x1);
+	return ((gpio_regs->gplev[pin / 32]) >> (pin % 32)) & 0x1;
 }
 
 module_init(mon_module_init);
