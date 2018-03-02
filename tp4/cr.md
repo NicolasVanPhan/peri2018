@@ -1,6 +1,6 @@
 
 COMMUNICATION PAR FIFO
-======================
+----------------------
 
 Les tubes (pipes) sont un mécanisme de communication inter-processus (IPC)
 suivant une politique first-in first-out (FIFO) et permettant à différents
@@ -15,13 +15,13 @@ sur le disque.
 A l'inverse, les tubes nommés prennent la forme d'un fichier (présence sur
 disque donc) et permettent une communication entre n'importe quels processus.
 
-Dans quel répertoire est créée la fifo ?
-----------------------------------------
+### Le writer
+
+#### Dans quel répertoire est créée la fifo ?
 
 Ici, la fifo est crée dans le répertoire `/tmp/`.
 
-Quelle différence entre mkfifo et open ?
-----------------------------------------
+#### Quelle différence entre mkfifo et open ?
 
 Ici, nous utiliserons un tube nommé pour faire communiquer le programme Py et
 le programme C.
@@ -31,8 +31,7 @@ pour le récepteur).
 Comme le tube s'utilise comme un fichier, il est normal qu'on l'ouvre avec
 la commande qui sert classiquement à ouvrir un fichier (aka `open()`).
 
-Pourquoi tester si la fifo existe ?
------------------------------------
+#### Pourquoi tester si la fifo existe ?
 
 Le writer crée un pipe et écrit dedans, puis il s'arrête. Ensuite, le reader
 lira le contenu du pipe, mais le writer ne sait pas quand est-ce que le
@@ -44,8 +43,7 @@ il recréera le pipe et supprimera donc son ancien contenu alors qu'il n'a pas
 été lu par le reader. C'est pour cela que le writer ne crée le pipe que s'il
 n'existe pas déjà.
 
-A quoi sert flush ?
--------------------
+#### A quoi sert flush ?
 
 Lorsque le writer exécute la fonction `write()`, les données à écrire sont
 écrites non pas dans le disque mais dans un buffer, et le reader ne lit que ce
@@ -56,14 +54,18 @@ ce qui est inutiliement long. Par conséquent, dès lors que le writer écrit,
 il flush le buffer (il répercute cette écriture sur le disque) pour qu'elle soit
 aussitot disponible par le reader.
 
-Pourquoi ne ferme-t-on pas la fifo ?
-------------------------------------
+#### Pourquoi ne ferme-t-on pas la fifo ?
+
+### Le reader
 
 
-Le writer ne fait rien tant que le reader n'est pas appelé, expliquez
----------------------------------------------------------------------
+#### Que fait `readline()`
+La fonction  `readline()` lit une ligne de texte (donc jusqu'à un '\n')
+depuis la FIFO et renvoie cette ligne, qui sera ensuite stockée dans `str`.
 
-D'après le man, si on ouvre une FIFO sans donner l'option O_NONBLOCK,
+#### Le writer ne fait rien tant que le reader n'est pas appelé, expliquez
+
+D'après le man, si on ouvre une FIFO sans donner l'option `O_NONBLOCK`,
 alors un writer ouvrant une fifo en écriture bloquera tant qu'un reader ne
 l'aura pas ouvert en lecture.
 "An open() for writing only will block the calling thread until a thread opens
@@ -72,7 +74,7 @@ le reader n'est pas appelé, en réalité le writer bloque sur open().
 
 
 CREATION D'UN SERVEUR FAKE
-==========================
+--------------------------
 
 La fonction `select()` permet de surveiller si des évènements se produisent sur
 des fichiers ouverts, et l'intérêt est qu'elle peut surveiller plusieurs
