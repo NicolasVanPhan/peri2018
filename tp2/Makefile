@@ -1,7 +1,7 @@
-CARD_NUMB	= 25
+CARD_NUMB	= 24
 ROUTER          = 132.227.102.36
 LOGIN           = aggoun-phan
-LAB             = tp2
+LAB             = lab2
 
 MODULE1         = module
 MODULE2         = ledbp

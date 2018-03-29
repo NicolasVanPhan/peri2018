@@ -1,5 +1,5 @@
-NAME = aggoun-phan
-RPI ?= 25
+NAME = aggoun-phan/lab1/
+RPI ?= 24
 
 CROSS_COMPILE ?= bcm2708hardfp-
 

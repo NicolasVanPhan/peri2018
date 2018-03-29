@@ -104,6 +104,7 @@ open_ledbp(struct inode *inode, struct file *file) {
 	printk(KERN_DEBUG "open()\n");
 
 	gpio_fsel(gpio_led[0], GPIO_OUTPUT);
+	gpio_fsel(gpio_led[1], GPIO_OUTPUT);
 	gpio_fsel(gpio_btn[0], GPIO_INPUT);
 	return 0;
 }
@@ -122,7 +123,7 @@ read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
 			buf[0] = '0';
 		}
 		else {
-			buf[0] = '2';
+			buf[0] = '0';
 			printk(KERN_DEBUG "GPIO read %d\n", read_value);
 		}
 	}
@@ -131,14 +132,18 @@ read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
 
 static ssize_t 
 write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
-	printk(KERN_DEBUG "write()\n");
+	int i;
 
-	if (count > 0) {  		/* If user wrote something */
-		printk(KERN_DEBUG "char : %c\n", buf[0]);
-		if (buf[0] == '0')	/* if first char is 0, turn off LED0*/
-			gpio_write(gpio_led[0], 0);
-		else		  	/* Otherwise turn on LED0 */
-			gpio_write(gpio_led[0], 1);
+	printk(KERN_DEBUG "write()\n");
+	if (count == 0)
+		return count;
+	for (i = 0; i < 2; i++)
+	{
+		printk(KERN_DEBUG "ledbp char%d: %c\n", i, buf[i]);
+		if (buf[0] & (1 << i))	/* if bit n is 1, turn on LED n*/
+			gpio_write(gpio_led[i], 1);
+		else		  	/* Otherwise turn off LED n */
+			gpio_write(gpio_led[i], 0);
 	}
 	return count;
 }
