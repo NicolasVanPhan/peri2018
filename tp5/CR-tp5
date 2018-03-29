@@ -1,0 +1,36 @@
+# Compte rendu de TME n°5
+Burel Stéphane et Bryan Aggoun
+
+Vous trouverez ce tp et les autres sur [le dépôt Git de notre binôme prévu pour cette UE](https://bitbucket.org/s_burel/4i109_peri_2018/src) (le tp5 se trouve dans le dossier tp5)
+
+
+#TP5 : Fake Gateway et affichage de données sur un serveur
+## Objectif
+Le but est de réaliser un logiciel qui reçoit des données et les envoie à un serveur qui les affiche. Mais nous ne disposons pas encore du gateway. Nous avons donc simulé ce dernier avec avec notre programme fake_gateway.c afin de faire fonctionner correctement notre serveur.
+
+### Fake Gateway :
+Cette fonction se compose en deux processus :
+
+#### Fake Gateway : write_random_value
+Un qui simule une écriture de donnée en écrivant des valeurs aléatoire dans une fifo.
+Les valeurs alétoires ne varient que de quelques pourcentages :
+
+      value += (rand() * rand()) % value/100;
+
+Pour faciliter la lecture de cette fifo, nous avons écrit ces données au format json array.
+
+    dprintf(fd, "[%ld, %d],",time(NULL), value);
+
+
+#### Fake Gateway : read_pipe_and_display
+Le second processus attends qu'une fifo ait du contenu à afficher avant de l'afficher dans le canal standard.
+Nous avons pour ça réutiliser le code du précédent TP en l'adaptant.
+
+### Server.py :
+Le serveur py lit les données écrites par le Fake Gateway et les affiche dans un graphique grâce à google charts.
+Le code étant trop long pour être inséré ici, vous le trouverez dans notre dépot git fichier : tp5/server/www/cgi-bin/main.py
+
+La page se réactualise toutes les 5 secondes grâce à une balise meta insérée en tête 
+  
+    <meta http-equiv="refresh" content="5" />
+
