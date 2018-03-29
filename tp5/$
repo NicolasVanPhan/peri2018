@@ -1,0 +1,37 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
+
+int main(int argc, char *argv[]){
+	
+	/*On ouvre le fichier log_in dans lequel on va écrire*/
+	FILE* log_in;
+	time_t date;
+	int random_value = rand();
+
+	log_in = fopen("./log_in", "w");
+		
+	if (log_in == NULL)
+	{
+		printf("Error open file\n");
+		return 0;
+	}
+	else
+	{
+		srand(time(NULL));
+		while(1)
+		{
+			date = time(NULL);
+			random_value += rand() % 100;
+		 	printf("%ld; %d\n", date, random_value);
+		 	fprintf(log_in,"%ld; %d\n", date, random_value);
+		}
+	}
+	fclose(log_in);
+
+	return 0;
+}

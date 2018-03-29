@@ -1,0 +1,6 @@
+Notes pour le TP5 de PERI :
+============================
+
+## Remarques :
+
+Lorsque l'on réalise une écriture dans un fichier avec la norme POSIX (fopen()), cela met les éléments que l'on veut écrire dans le fichier dans un buffer qui ne se vide que lorsqu'il est plein ou si le programme se termine normalement (exit()). Les accès au disque étant très long, on veut donc limiter le nombre d'appels systèmes et le nombre d'accès sur le disque. Il est donc  nécessaire de rajouter la commande fflush(FILE*) pour forcer l'écriture sur le disque. Il est aussi possible d'utiliser la fonction setbuf() qui permet de choisir un buffer est donc d'imposer un buffer à une adresse NULL.
