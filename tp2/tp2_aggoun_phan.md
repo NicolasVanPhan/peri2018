@@ -185,10 +185,31 @@ static int gpio_read(int pin)
 ```
 
 Nous avons choisi une convention simple pour le controle des LEDS et du bouton:
-L'utilisateur doit écrire deux caractères dans `/dev/ledbp` pour les LEDS,
-le caractère `0` éteint la LED et un autre caractère l'allume.
-Puis la valeur du bouton s'obtient en lisant un octet de `/dev/ledbp`,
-`0` veut dire que le bouton est enfoncé et `1` relaché (ou `2` en cas d'erreur).
+L'utilisateur écrit un chiffre dans `/dev/ledbp` pour contrôler les LEDs.
+Le bit n de ce chiffre donne l'état de la led n.
+Si le bit 1 est à 0, la led 1 est éteinte par exemple.
+Puis la valeur du bouton s'obtient en lisant un octet de `/dev/ledbp`
+`0` veut dire que le bouton est enfoncé et `1` relaché.
+
+```C
+static ssize_t 
+write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
+	int i;
+
+	printk(KERN_DEBUG "write()\n");
+	if (count == 0)
+		return count;
+	for (i = 0; i < 2; i++)
+	{
+		printk(KERN_DEBUG "ledbp char%d: %c\n", i, buf[i]);
+		if (buf[0] & (1 << i))	/* if bit n is 1, turn on LED n*/
+			gpio_write(gpio_led[i], 1);
+		else		  	/* Otherwise turn off LED n */
+			gpio_write(gpio_led[i], 0);
+	}
+	return count;
+}
+```
 
 ```C
 static ssize_t 
@@ -205,24 +226,9 @@ read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
 			buf[0] = '0';
 		}
 		else {
-			buf[0] = '2';
+			buf[0] = '0';
 			printk(KERN_DEBUG "GPIO read %d\n", read_value);
 		}
-	}
-	return count;
-}
-```
-```C
-static ssize_t 
-write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
-	printk(KERN_DEBUG "write()\n");
-
-	if (count > 0) {  		/* If user wrote something */
-		printk(KERN_DEBUG "char : %c\n", buf[0]);
-		if (buf[0] == '0')	/* if first char is 0, turn off LED0*/
-			gpio_write(gpio_led[0], 0);
-		else		  	/* Otherwise turn on LED0 */
-			gpio_write(gpio_led[0], 1);
 	}
 	return count;
 }
@@ -246,7 +252,6 @@ do
 	fi
 done
 ```
-
 
 Tentative de migration vers la Raspberry Pi 3
 =====================================================
