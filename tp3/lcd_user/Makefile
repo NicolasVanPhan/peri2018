@@ -1,7 +1,7 @@
-RPI?=25
+RPI?=24
 SRC=src
 APP=lcd_user
-DST=aggoun-phan/tp3
+DST=aggoun-phan/lab3
 CFLAGS=-Wall -Wfatal-errors -O2
 LDFLAGS=-static -L$(LIB) -lgpio
 
