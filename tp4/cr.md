@@ -130,14 +130,17 @@ if (FD_ISSET(s2f, &rfds)) {                     // something to read
 CREATION D'UN SERVEUR WEB
 -------------------------
 
-Lorsqu'un client va sur la page web, entre le nombre 42 et clique sur "envoyer",
-son navigateur web émet une requête HTTP vers le serveur sur la Raspberry Pi,
-cette requete contient la valeur entrée (ici 42).
+### Du client vers les LED/bouton
 
-Le script server.py écoute en permanence sur le port 8024 les requêtes entrantes
-et lorsqu'elle en recoit une, elle détecte que l'utilisateur a rempli le
-formulaire HTML. Cela déclenche l'exécution du script `led.py` comme spécifié
-dans le code HTML du formulaire.
+Lorsqu'un client va sur la page web, entre le nombre (42 par exemple) et clique
+sur "Entrer", son navigateur web émet une requête HTTP vers le serveur sur
+la Raspberry Pi, cette requete contient la valeur entrée (ici 42).
+
+Le script server.py écoute en permanence sur le port 8024 les requêtes
+entrantes et lorsqu'elle en recoit une, elle détecte que l'utilisateur
+a rempli le formulaire HTML. Cela déclenche l'exécution du script
+`led.py` comme spécifié dans le code HTML du formulaire
+(à la ligne `<form method="POST" action="led.py">` de main.py)
 
 Ce script va lire la donnée entrée par l'utilisateur dans le champ `val` du
 formulaire via `form.getValue('val')`, et renvoie cette valeur vers le serveur
@@ -145,6 +148,14 @@ fake via le tube.
 
 Le serveur fake va ensuite allumer et éteindre les deux LEDs en fonction de la
 valeur des deux LSBs de la valeur recue.
+
+### Des LED/bouton vers le client
+
+Après avoir mis à jour l'état des LEDs, le serveur fake lit l'état du bouton
+et renvoie 1 ou 0 (pour bouton pressé ou relaché) au serveur via le tube,
+et le serveur renvoie cette valeur au client dans la page HTML générée.
+
+### Principales modifications
 
 La principale modification de code effectuée par rapport à l'exercice 2 est
 ce que fait le serveur fake lorsqu'il recoit un message depuis le tube :
@@ -171,8 +182,8 @@ if (FD_ISSET(s2f, &rfds)) {                     // something to read
 		gpio_write(LIBGPIO_LED1, 0);
 
 	// Return the button state to the client
-	//gpio_read(LIBGPIO_BTN0, &btnValue);
-	//serverResponse[0] = btnValue + '0';
+	gpio_read(LIBGPIO_BTN0, &btnValue);
+	serverResponse[0] = btnValue + '0';
 	write(f2s, serverResponse, 50);
 } 
 ```
