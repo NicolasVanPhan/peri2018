@@ -126,3 +126,53 @@ if (FD_ISSET(s2f, &rfds)) {                     // something to read
 	write(f2s, buff, 100);
 }
 ```
+
+CREATION D'UN SERVEUR WEB
+-------------------------
+
+Lorsqu'un client va sur la page web, entre le nombre 42 et clique sur "envoyer",
+son navigateur web émet une requête HTTP vers le serveur sur la Raspberry Pi,
+cette requete contient la valeur entrée (ici 42).
+
+Le script server.py écoute en permanence sur le port 8024 les requêtes entrantes
+et lorsqu'elle en recoit une, elle détecte que l'utilisateur a rempli le
+formulaire HTML. Cela déclenche l'exécution du script `led.py` comme spécifié
+dans le code HTML du formulaire.
+
+Ce script va lire la donnée entrée par l'utilisateur dans le champ `val` du
+formulaire via `form.getValue('val')`, et renvoie cette valeur vers le serveur
+fake via le tube.
+
+Le serveur fake va ensuite allumer et éteindre les deux LEDs en fonction de la
+valeur des deux LSBs de la valeur recue.
+
+La principale modification de code effectuée par rapport à l'exercice 2 est
+ce que fait le serveur fake lorsqu'il recoit un message depuis le tube :
+L'état de la led 0 (resp. 1) sera l'état du bit 0 (resp. 1) du nombre recu.
+
+*Principale modification dans fake.c (maintenant ledbp.c) :*
+```C
+// If there's something coming from the pipe                         
+if (FD_ISSET(s2f, &rfds)) {                     // something to read 
+	int nbchar;                                                      
+	if ((nbchar = read(s2f, serverRequest, MAXServerResquest)) == 0) break;
+	serverRequest[nbchar]=0;                                         
+	printf("Receive : %s\n", serverRequest);                         
+
+	// Set the LED state                          
+	if (((int)serverRequest[0] - '0') & 0x1) // ASCII -> DEC conversion
+		gpio_write(LIBGPIO_LED0, 1);                             
+	else                                                             
+		gpio_write(LIBGPIO_LED0, 0);                             
+
+	if (((int)serverRequest[0] - '0') & 0x2) // ASCII -> DEC conversion
+		gpio_write(LIBGPIO_LED1, 1); 
+	else
+		gpio_write(LIBGPIO_LED1, 0);
+
+	// Return the button state to the client
+	//gpio_read(LIBGPIO_BTN0, &btnValue);
+	//serverResponse[0] = btnValue + '0';
+	write(f2s, serverResponse, 50);
+} 
+```
