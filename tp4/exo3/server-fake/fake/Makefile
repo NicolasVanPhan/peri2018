@@ -1,4 +1,4 @@
-APPS = fake
+APPS = ledbp
 CFLAGS=-Wall
 
 all 	: $(APPS)

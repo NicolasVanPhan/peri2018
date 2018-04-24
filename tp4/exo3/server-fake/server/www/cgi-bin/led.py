@@ -8,7 +8,7 @@ f2sName = '/tmp/f2s_aggounphan'
 s2f = open(s2fName,'w+')
 f2s = open(f2sName,'r',0)
 
-s2f.write("w %s\n" % val)
+s2f.write("%s\n" % val)
 s2f.flush()
 res = f2s.readline()
 f2s.close()
