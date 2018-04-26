@@ -25,14 +25,13 @@ void setup_Screen(struct ctx_Screen * ctx, int timer, unsigned long period, int 
 
 void loop_Screen(struct ctx_Screen * ctx) {
   if (!waitFor(ctx->cnt.timer, ctx->cnt.period)) return;          // sort s'il y a moins d'une période écoulée
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setTextColor(WHITE, BLACK);
+  display.clearDisplay();					  
+  display.setTextSize(1);					  // définie la taille du texte qui va être affiché
+  display.setTextColor(WHITE, BLACK);				  // Texte blanc sur fond noir
   display.setCursor(0,0);
-  display.println(ctx->cnt.value);
-  display.display();
-  ctx->cnt.value++;
+  display.println(ctx->cnt.value);				  // La valeur du compteur sera affiché à l'écran au prochain display
+  display.display();						  // On met à jour l'affichage de l'écran 
+  ctx->cnt.value++;						  // On incrémente le compteur
   Serial.println("toto");
 }
 
