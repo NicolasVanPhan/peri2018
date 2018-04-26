@@ -137,8 +137,8 @@ int main()
 			gpio_write(LIBGPIO_LED1, 0);
 
 		// Return the button state to the client
-		//gpio_read(LIBGPIO_BTN0, &btnValue);
-		//serverResponse[0] = btnValue + '0';
+		gpio_read(LIBGPIO_BTN0, &btnValue);
+		serverResponse[0] = btnValue + '0';
                 write(f2s, serverResponse, 50);
             }
         }

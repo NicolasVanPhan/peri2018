@@ -27,6 +27,6 @@ LEDS:<br/>
   set %s
 </form>
 </body>
-""" % (val,)
+""" % (res,)
 
 print html
