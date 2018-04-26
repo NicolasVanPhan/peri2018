@@ -8,9 +8,9 @@
 struct context_receiver {
   struct mailbox    *mBox;
   struct Count_st   counter;
-  long              blinkPeriod;
-  long              blinkCountDown;
-  int               ledVal;
+  long              blinkPeriod;    /* How many timer periods in a blink period */
+  long              blinkCountDown; /* Counts down until a blink period has passed */
+  int               ledVal;         /* The current LED state (HIGH or LOW) */
 };
 
 void setup_receiver(struct context_receiver *ctx, struct mailbox *mBox,

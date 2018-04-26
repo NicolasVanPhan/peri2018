@@ -16,18 +16,20 @@ void setup_receiver(struct context_receiver *ctx, struct mailbox *mBox,
 void loop_receiver(struct context_receiver *ctx) {
 
   /* Blink */
+  /* If a timer period has passed */
   if (waitFor(ctx->counter.timer, ctx->counter.period)) {
-    ctx->blinkCountDown -= ctx->counter.period / 1000;
+    ctx->blinkCountDown -= ctx->counter.period / 1000;  /* Update the countdown */
+    /* If a blink period has passed */
     if (ctx->blinkCountDown < 0) {
-      ctx->blinkCountDown = ctx->blinkPeriod;
-      ctx->ledVal = 1 - ctx->ledVal;
+      ctx->blinkCountDown = ctx->blinkPeriod;   /* Reset the countdown */
+      ctx->ledVal = 1 - ctx->ledVal;            /* Toggle the LED value */
       digitalWrite(13, ctx->ledVal);
     }
   }
   
   /* If a new sensor value arrived, update the blinking period */
   if (ctx->mBox->state == FULL) {
-    ctx->blinkPeriod = ctx->mBox->val * 5;
+    ctx->blinkPeriod = ctx->mBox->val * 5;      /* Set the new blink period */
     ctx->mBox->state = EMPTY;
   }
 }
