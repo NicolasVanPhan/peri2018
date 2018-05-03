@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -15,6 +16,8 @@ RF24 radio(15,8); // radio(CE,CS)
 
 byte addresses[][6] = {"02048", "02049"};
 
+ofstream myfile;
+
 void setup() {
   radio.begin();
   radio.setPALevel(RF24_PA_LOW);
@@ -22,6 +25,7 @@ void setup() {
   radio.openReadingPipe(1,addresses[0]);
   radio.printDetails();
   radio.startListening();
+  myfile.open("my_db.dat", ios::ate);
 }
 
 char mess[16];
@@ -36,6 +40,9 @@ void loop() {
   if (radio.available()) {
 	  radio.read(buffer, sizeof(buffer));
 	  cout << buffer << std::endl;
+	  myfile << buffer << ";" << time(NULL) << std::endl;
+	  // don't forget to flush, just in case
+	  // and one day you'll have to close the file...
 	  myhint = atoi(buffer);
 	  sprintf(buffer2, "%d", myhint + 1000);
 
