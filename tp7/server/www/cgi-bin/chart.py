@@ -12,7 +12,7 @@ most recent Arduino temperature samples stored in the database.
 import time as ltime
 
 nbsamples = 10
-lines = open("/home/pi/aggoun-phan/my_db.dat", "r").readlines()
+lines = open("/home/pi/aggoun-phan/my_db.dat", "r+").readlines()
 
 # Google Charts link header
 html="""
@@ -22,18 +22,27 @@ cht=lxy
 &chs=250x200
 &chd=t:"""
 
-# Parsing the nbsamples'th last line
-[val,time] = lines[-nbsamples].split(";");
-vals = val
-times = time;
-time_min = int(time); # Knowing the min value is useful for chart scaling
-# Parsing all the following lines until the end of the file
-for line in lines[-nbsamples + 1:] :
-	[val,time] = line.split(";");
-	vals += "," + val
-	times += "," + time;
-html += times + "|" + vals
-time_max = int(time); # Useful for chart scaling
+# If the database contains less than 'nbsamples' samples
+if (len(lines) < nbsamples) :
+	nbsamples = len(lines); # Reduce nbsamples to the database length
+
+#If the file is not empty
+if (nbsamples != 0) :
+	# Parsing the nbsamples'th last line
+	[val,time] = lines[-nbsamples].split(";");
+	vals = val
+	times = time;
+	time_min = int(time); # Knowing the min value is useful for chart scaling
+	# Parsing all the following lines until the end of the file
+	for line in lines[-nbsamples + 1:] :
+		[val,time] = line.split(";");
+		vals += "," + val
+		times += "," + time;
+	html += times + "|" + vals
+	time_max = int(time); # Useful for chart scaling
+else :
+	time_min = 0;
+	time_max = 0;
 
 # Google Charts link footer
 #time_min_sec = int(ltime.strftime("%S", ltime.localtime(time_min)));
