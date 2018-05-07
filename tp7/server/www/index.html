@@ -1,8 +1,19 @@
 <html>
- <head><title>Peri Web Server</title></head>
+ <head>
+	<title>Peri Web Server</title>
+	<!-- <meta http-equiv="refresh" content="5" /> -->
+	<!-- Regularily refresh the chart at regular intervals -->
+	<script language="javascript">
+		window.onload = setInterval(
+		function() {
+			document.getElementById("mychart").src = "cgi-bin/chart.py";
+		}, 1000);
+	</script>
+	
+</head>
  <frameset rows="100,70,*" frameborder=0>
   <frame src="img/peri.png">
   <frame src="cgi-bin/main.py">
-  <frame src="cgi-bin/chart.py">
+  <frame id="mychart" src="cgi-bin/chart.py">
  </frameset>
 </html>

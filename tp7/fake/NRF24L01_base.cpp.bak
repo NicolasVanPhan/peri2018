@@ -1,7 +1,5 @@
 /**
  * PERI TP7
- * Nicolas Phan
- * Bryan Aggoun
  *
  * This program retrieves data sent by the Arduino through NRF
  * and stores it in a file/database.
@@ -38,13 +36,33 @@ void setup() {
 
 char mess[16];			/* Contains the first user argument (argv[1]) */
 char buffer[32];		/* A buffer for retrieving the Arduino data */
+//char buffer2[32];
+//int  myhint;
+//unsigned long timer;
 
 void loop() {
-  if (radio.available()) {	/* If we received new data from the Arduino */
-	  radio.read(buffer, sizeof(buffer));	/* Retrieve it */
-	  cout << buffer << std::endl;			/* Print it, just for debug */
-	  myfile << buffer << ";" << time(NULL) << std::endl; /* Store it in DB */
+  //cout << "." << flush;
+  //sprintf(buffer,"%s %d", mess, timer);
+  /* If we received new data from the Arduino */
+  if (radio.available()) {
+	  /* Retrieve it */
+	  radio.read(buffer, sizeof(buffer));
+	  cout << buffer << std::endl;	/* Print it, just for debug */
+	  /* Write captured value into the database */
+	  myfile << buffer << ";" << time(NULL) << std::endl;
+	  // don't forget to flush, just in case
+	  // and one day you'll have to close the file...
+	  //myhint = atoi(buffer);
+	  //sprintf(buffer2, "%d", myhint + 1000);
+
+	  //buffer2 << "toto : " << buffer;
+	  //radio.stopListening();
+	  //radio.write(buffer2, 32);
+	  //radio.startListening();
   }
+  //radio.write( buffer, sizeof(buffer) );
+  //timer++;  
+  //sleep(1);
 }
 
 int main(int argc, char **argv)
