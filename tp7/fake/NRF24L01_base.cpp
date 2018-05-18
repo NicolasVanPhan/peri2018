@@ -21,14 +21,15 @@ typedef uint8_t byte;
 using namespace std;
 
 RF24 radio(15,8); // radio(CE,CS)			/* NRF communication */
-byte addresses[][6] = {"02048", "02049"};	/* NRF communication channels */
+byte addresses[][6] = {"02548", "02549"};	/* NRF communication channels */
 ofstream myfile;							/* The database is a file */
 
 void setup() {
 	/* Initiate NRF communication and start listening to the Arduino */
   radio.begin();
+  //radio.setChannel(100);
   radio.setPALevel(RF24_PA_LOW);
-  radio.openWritingPipe(addresses[1]);
+  //radio.openWritingPipe(addresses[1]);
   radio.openReadingPipe(1,addresses[0]);
   radio.printDetails();
   radio.startListening();
@@ -41,6 +42,7 @@ char buffer[32];		/* A buffer for retrieving the Arduino data */
 
 void loop() {
   if (radio.available()) {	/* If we received new data from the Arduino */
+	  cout << "toto" << std::endl;
 	  radio.read(buffer, sizeof(buffer));	/* Retrieve it */
 	  cout << buffer << std::endl;			/* Print it, just for debug */
 	  myfile << buffer << ";" << time(NULL) << std::endl; /* Store it in DB */

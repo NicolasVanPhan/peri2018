@@ -1,4 +1,4 @@
-RPI?=24
+RPI?=22
 SRC=./
 APP=NRF24L01_base
 DST=aggoun-phan

@@ -7,7 +7,6 @@ struct context_sender  ctxSender;
 
 /* ---------- SETUP -------------------------------- */
 void setup() {
-  Serial.begin(9600);
   setup_sender(&ctxSender, 0, 1000000);
 }
 
